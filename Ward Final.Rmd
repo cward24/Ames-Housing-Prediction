@@ -36,8 +36,27 @@ ames2 = ames %>% drop_na()
 ```
 
 ```{r}
-#errors: utilities 
-lmames = lm(SalePrice~.-Utilities, data=ames2)
+ames2 = as.data.frame(unclass(ames2), stringsAsFactors = TRUE)
+factors = sapply(ames2, is.factor)
+#ames2 = ames2 %>% dplyr::mutate_if(is.character, as.numeric)
+#sapply(ames2, class)
+#is.numeric(ames2$Alley)
+str(ames2)
+```
+
+```{r}
+#errors: utilities X1stFlrSF BsmtFinSF1
+lmames = lm(SalePrice~MSSubClass++LotFrontage+LotArea+as.numeric(Neighborhood)+
+              OverallQual +OverallCond+YearBuilt+as.numeric(RoofMatl)+
+              as.numeric(MasVnrType)+MasVnrArea+as.numeric(ExterQual)+as.numeric(BsmtQual)+
+              as.numeric(BsmtExposure)+TotalBsmtSF+GrLivArea+BsmtFullBath+
+              BedroomAbvGr+as.numeric(KitchenQual)+TotRmsAbvGrd+as.numeric(Functional)+
+              Fireplaces+GarageCars+WoodDeckSF+ScreenPorch+PoolArea+
+              as.numeric(PoolQC)+as.numeric(SaleCondition), data=ames2)
 summary(lmames)
+```
+
+```{r}
+
 ```
 
