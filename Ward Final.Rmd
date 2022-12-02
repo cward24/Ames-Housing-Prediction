@@ -1,0 +1,37 @@
+---
+title: "Data424 Final"
+author: "Connor"
+date: "11/27/2022"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, include=FALSE}
+rm(list = ls(all.names = TRUE))
+```
+
+```{r}
+#packages
+library(tidyr)
+library(dplyr)
+```
+
+```{r}
+ames = read.csv("House.csv")
+```
+
+```{r}
+ames = ames %>% tidyr::replace_na(list(BsmtQual = "none", BsmtCond = "none", BsmtExposure="none", 
+                                       BsmtFinType1="none",BsmtFinType2="none", FireplaceQu="none", 
+                                       GarageQual="none", GarageCond="none", PoolQC="none",
+                                       Fence="none", MiscFeature="none", Alley="none", GarageType="none",
+                                       GarageFinish="none", GarageYrBlt=round(mean(ames$GarageYrBlt, na.rm=TRUE))))
+```
+
+```{r}
+ames2 = na.omit(ames)
+```
+
