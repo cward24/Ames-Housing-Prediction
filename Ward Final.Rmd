@@ -26,12 +26,18 @@ ames = read.csv("House.csv")
 ```{r}
 ames = ames %>% tidyr::replace_na(list(BsmtQual = "none", BsmtCond = "none", BsmtExposure="none", 
                                        BsmtFinType1="none",BsmtFinType2="none", FireplaceQu="none", 
-                                       GarageQual="none", GarageCond="none", PoolQC="none",
-                                       Fence="none", MiscFeature="none", Alley="none", GarageType="none",
-                                       GarageFinish="none", GarageYrBlt=round(mean(ames$GarageYrBlt, na.rm=TRUE))))
+                                       GarageQual="none", GarageCond="none", PoolQC="none",Fence="none",
+                                       MiscFeature="none", Alley="none", GarageType="none",GarageFinish="none",
+                                       GarageYrBlt=round(mean(ames$GarageYrBlt, na.rm=TRUE))))
 ```
 
 ```{r}
-ames2 = na.omit(ames)
+ames2 = ames %>% drop_na()
+```
+
+```{r}
+#errors: utilities 
+lmames = lm(SalePrice~.-Utilities, data=ames2)
+summary(lmames)
 ```
 
