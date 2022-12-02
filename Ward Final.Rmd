@@ -56,7 +56,3 @@ lmames = lm(SalePrice~MSSubClass++LotFrontage+LotArea+as.numeric(Neighborhood)+
 summary(lmames)
 ```
 
-```{r}
-
-```
-
