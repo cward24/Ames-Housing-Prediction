@@ -9,6 +9,7 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+Clears global environment 
 ```{r, include=FALSE}
 rm(list = ls(all.names = TRUE))
 ```
@@ -17,6 +18,9 @@ rm(list = ls(all.names = TRUE))
 #packages
 library(tidyr)
 library(dplyr)
+library(leaps)
+library(psych)
+library(ggplot2)
 ```
 
 ```{r}
@@ -38,21 +42,91 @@ ames2 = ames %>% drop_na()
 ```{r}
 ames2 = as.data.frame(unclass(ames2), stringsAsFactors = TRUE)
 factors = sapply(ames2, is.factor)
-#ames2 = ames2 %>% dplyr::mutate_if(is.character, as.numeric)
-#sapply(ames2, class)
-#is.numeric(ames2$Alley)
 str(ames2)
 ```
 
 ```{r}
-#errors: utilities X1stFlrSF BsmtFinSF1
 lmames = lm(SalePrice~MSSubClass++LotFrontage+LotArea+as.numeric(Neighborhood)+
-              OverallQual +OverallCond+YearBuilt+as.numeric(RoofMatl)+
-              as.numeric(MasVnrType)+MasVnrArea+as.numeric(ExterQual)+as.numeric(BsmtQual)+
+              OverallQual+YearBuilt+as.numeric(RoofMatl)+
+              MasVnrArea+as.numeric(ExterQual)+as.numeric(BsmtQual)+
               as.numeric(BsmtExposure)+TotalBsmtSF+GrLivArea+BsmtFullBath+
-              BedroomAbvGr+as.numeric(KitchenQual)+TotRmsAbvGrd+as.numeric(Functional)+
-              Fireplaces+GarageCars+WoodDeckSF+ScreenPorch+PoolArea+
-              as.numeric(PoolQC)+as.numeric(SaleCondition), data=ames2)
+              BedroomAbvGr+as.numeric(KitchenQual)+as.numeric(Functional)+
+              Fireplaces+GarageCars+ScreenPorch+
+              as.numeric(SaleCondition), data=ames2)
 summary(lmames)
+```
+
+```{r}
+aic_ames = step(lmames, k=2)
+aic_ames_log = step(lmames, k=log(1194))
+anova(aic_ames_log)
+```
+
+```{r}
+lmames2 = lmames = lm(SalePrice~MSSubClass++LotFrontage+LotArea+as.numeric(Neighborhood)+
+              OverallQual+YearBuilt+as.numeric(RoofMatl)+
+              MasVnrArea+as.numeric(ExterQual)+as.numeric(BsmtQual)+
+              as.numeric(BsmtExposure)+GrLivArea+
+              BedroomAbvGr+as.numeric(KitchenQual)+as.numeric(Functional)+
+              Fireplaces+GarageCars+ScreenPorch+
+              as.numeric(SaleCondition), data=ames2)
+summary(lmames2)
+```
+
+```{r}
+aic_ames2 = step(lmames2, k=2)
+aic_ames_log2 = step(lmames2, k=log(1194))
+anova(aic_ames2)
+anova(aic_ames_log2)
+```
+
+```{r}
+b = regsubsets(SalePrice~MSSubClass++LotFrontage+LotArea+as.numeric(Neighborhood)+
+              OverallQual+YearBuilt+as.numeric(RoofMatl)+
+              MasVnrArea+as.numeric(ExterQual)+as.numeric(BsmtQual)+
+              as.numeric(BsmtExposure)+GrLivArea+
+              BedroomAbvGr+as.numeric(KitchenQual)+as.numeric(Functional)+
+              Fireplaces+GarageCars+ScreenPorch+
+              as.numeric(SaleCondition), data=ames2)
+summary(b)
+summary(b)$adjr2
+```
+
+```{r}
+lmames3 = lm(SalePrice~as.numeric(BsmtQual)+as.numeric(BsmtExposure)+
+              as.numeric(KitchenQual)+GarageCars+GrLivArea+MSSubClass+
+              OverallQual+OverallQual+YearBuilt+MasVnrArea, data=ames2)
+summary(lmames3)
+```
+
+```{r}
+b2 = regsubsets(SalePrice~as.numeric(BsmtQual)+as.numeric(BsmtExposure)+
+              as.numeric(KitchenQual)+GarageCars+GrLivArea+MSSubClass+
+              OverallQual+OverallQual+YearBuilt+MasVnrArea, data=ames2)
+summary(b2)
+summary(b2)$cp
+summary(b2)$adjr2
+```
+
+```{r}
+aic_ames3 = step(lmames3, k=2)
+aic_ames_log3 = step(lmames3, k=log(1194))
+anova(aic_ames3)
+anova(aic_ames_log3)
+```
+
+```{r}
+#cor(lmames3)
+```
+
+Plots
+```{r}
+plot(lmames3)
+```
+
+```{r}
+ames2$residuals = lmames3$residuals
+ames2$predicted = predict(lmames3)
+plot(ames2$predicted, ames2$residuals)
 ```
 
