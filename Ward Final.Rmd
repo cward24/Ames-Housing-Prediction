@@ -9,7 +9,6 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-Clears global environment 
 ```{r, include=FALSE}
 rm(list = ls(all.names = TRUE))
 ```
@@ -21,6 +20,7 @@ library(dplyr)
 library(leaps)
 library(psych)
 library(ggplot2)
+library(MASS)
 ```
 
 ```{r}
@@ -46,7 +46,34 @@ str(ames2)
 ```
 
 ```{r}
-lmames = lm(SalePrice~MSSubClass++LotFrontage+LotArea+as.numeric(Neighborhood)+
+lmames_orig = lm(SalePrice~MSSubClass++LotFrontage+LotArea+as.numeric(Neighborhood)+
+              OverallQual +OverallCond+YearBuilt+as.numeric(RoofMatl)+
+            as.numeric(MasVnrType)+MasVnrArea+as.numeric(ExterQual)+as.numeric(BsmtQual)+
+              as.numeric(BsmtExposure)+TotalBsmtSF+GrLivArea+BsmtFullBath+
+              BedroomAbvGr+as.numeric(KitchenQual)+TotRmsAbvGrd+as.numeric(Functional)+
+              Fireplaces+GarageCars+WoodDeckSF+ScreenPorch+PoolArea+
+              as.numeric(PoolQC)+as.numeric(SaleCondition), data=ames2)
+summary(lmames_orig)
+```
+
+```{r}
+#aic_ames_orig = step(lmames_orig, k=2)
+aic_ames_log_orig = step(lmames_orig, k=log(1194))
+```
+
+```{r}
+b_orig = regsubsets(SalePrice~MSSubClass++LotFrontage+LotArea+as.numeric(Neighborhood)+
+            OverallQual +OverallCond+YearBuilt+as.numeric(RoofMatl)+
+            as.numeric(MasVnrType)+MasVnrArea+as.numeric(ExterQual)+as.numeric(BsmtQual)+
+            as.numeric(BsmtExposure)+TotalBsmtSF+GrLivArea+BsmtFullBath+
+            BedroomAbvGr+as.numeric(KitchenQual)+TotRmsAbvGrd+as.numeric(Functional)+
+            Fireplaces+GarageCars+WoodDeckSF+ScreenPorch+PoolArea+
+            as.numeric(PoolQC)+as.numeric(SaleCondition), data=ames2)
+summary(b_orig)$adjr2
+```
+
+```{r}
+lmames = lm(SalePrice~MSSubClass+LotFrontage+LotArea+as.numeric(Neighborhood)+
               OverallQual+YearBuilt+as.numeric(RoofMatl)+
               MasVnrArea+as.numeric(ExterQual)+as.numeric(BsmtQual)+
               as.numeric(BsmtExposure)+TotalBsmtSF+GrLivArea+BsmtFullBath+
@@ -63,7 +90,7 @@ anova(aic_ames_log)
 ```
 
 ```{r}
-lmames2 = lmames = lm(SalePrice~MSSubClass++LotFrontage+LotArea+as.numeric(Neighborhood)+
+lmames2 = lm(SalePrice~MSSubClass++LotFrontage+LotArea+as.numeric(Neighborhood)+
               OverallQual+YearBuilt+as.numeric(RoofMatl)+
               MasVnrArea+as.numeric(ExterQual)+as.numeric(BsmtQual)+
               as.numeric(BsmtExposure)+GrLivArea+
@@ -81,13 +108,11 @@ anova(aic_ames_log2)
 ```
 
 ```{r}
-b = regsubsets(SalePrice~MSSubClass++LotFrontage+LotArea+as.numeric(Neighborhood)+
-              OverallQual+YearBuilt+as.numeric(RoofMatl)+
-              MasVnrArea+as.numeric(ExterQual)+as.numeric(BsmtQual)+
-              as.numeric(BsmtExposure)+GrLivArea+
-              BedroomAbvGr+as.numeric(KitchenQual)+as.numeric(Functional)+
-              Fireplaces+GarageCars+ScreenPorch+
-              as.numeric(SaleCondition), data=ames2)
+b = regsubsets(SalePrice~MSSubClass+LotFrontage+LotArea+as.numeric(Neighborhood)+OverallQual+
+              YearBuilt+as.numeric(RoofMatl)+MasVnrArea+as.numeric(ExterQual)+
+              as.numeric(BsmtQual)+as.numeric(BsmtExposure)+GrLivArea+BedroomAbvGr+
+              as.numeric(KitchenQual)+as.numeric(Functional)+Fireplaces+GarageCars+
+              ScreenPorch+as.numeric(SaleCondition), data=ames2)
 summary(b)
 summary(b)$adjr2
 ```
@@ -95,14 +120,22 @@ summary(b)$adjr2
 ```{r}
 lmames3 = lm(SalePrice~as.numeric(BsmtQual)+as.numeric(BsmtExposure)+
               as.numeric(KitchenQual)+GarageCars+GrLivArea+MSSubClass+
-              OverallQual+OverallQual+YearBuilt+MasVnrArea, data=ames2)
+              OverallQual+YearBuilt+MasVnrArea, data=ames2)
 summary(lmames3)
+```
+
+
+```{r}
+lmames4 = lm(SalePrice~BsmtQual+BsmtExposure+
+              KitchenQual+GarageCars+GrLivArea+MSSubClass+
+              OverallQual+YearBuilt+MasVnrArea, data=ames2)
+summary(lmames4)
 ```
 
 ```{r}
 b2 = regsubsets(SalePrice~as.numeric(BsmtQual)+as.numeric(BsmtExposure)+
               as.numeric(KitchenQual)+GarageCars+GrLivArea+MSSubClass+
-              OverallQual+OverallQual+YearBuilt+MasVnrArea, data=ames2)
+              OverallQual+YearBuilt+MasVnrArea, data=ames2)
 summary(b2)
 summary(b2)$cp
 summary(b2)$adjr2
@@ -115,9 +148,88 @@ anova(aic_ames3)
 anova(aic_ames_log3)
 ```
 
+All variables used and meanings:
+BsmtExposure: Refers to walkout or garden level walls. 5 grade scale
+BsmtQual: Evaluates the height of the basement. 6 grade scale
+KitchenQual: Kitchen quality. 5 grade scale
+GarageCars: Size of garage in car capacity
+GrLivArea: Above grade (ground) living area square feet
+MSSubClass: Identifies the type of dwelling involved in the sale
+OverallQual: Rates the overall material and finish of the house. 10 grade scale
+YearBuilt: Original construction date 
+MasVnrArea: Masonry veneer area in square feet. Seems to be another way to measure square footage
+
 ```{r}
-#cor(lmames3)
+cor_numeric = cor(ames2$MasVnrArea, ames2$GrLivArea)
+print(cor_numeric)
+qplot(MasVnrArea, GrLivArea, data=ames2)
 ```
+
+```{r}
+chi1 = table(ames2$BsmtQual, ames2$BsmtExposure)
+chisq.test(chi1)
+
+chi2 = table(ames2$BsmtQual, ames2$KitchenQual)
+chisq.test(chi2)
+
+chi3 = table(ames2$BsmtQual, ames2$GarageCars)
+chisq.test(chi3)
+
+chi4 = table(ames2$BsmtQual, ames2$MSSubClass)
+chisq.test(chi4)
+
+chi5 = table(ames2$BsmtQual, ames2$YearBuilt)
+chisq.test(chi5)
+
+chi6 = table(ames2$BsmtQual, ames2$OverallQual)
+chisq.test(chi6)
+
+chi7 = table(ames2$BsmtExposure, ames2$KitchenQual)
+chisq.test(chi7)
+
+chi8 = table(ames2$BsmtExposure, ames2$GarageCars)
+chisq.test(chi8)
+
+chi9 = table(ames2$BsmtExposure, ames2$OverallQual)
+chisq.test(chi9)
+
+chi10 = table(ames2$BsmtExposure, ames2$YearBuilt)
+chisq.test(chi10)
+
+chi11 = table(ames2$BsmtExposure, ames2$MSSubClass)
+chisq.test(chi11)
+
+chi12 = table(ames2$KitchenQual, ames2$GarageCars)
+chisq.test(chi12)
+
+chi13 = table(ames2$KitchenQual, ames2$MSSubClass)
+chisq.test(chi13)
+
+chi14 = table(ames2$KitchenQual, ames2$OverallQual)
+chisq.test(chi14)
+
+chi15 = table(ames2$KitchenQual, ames2$YearBuilt)
+chisq.test(chi15)
+
+chi16 = table(ames2$GarageCars, ames2$MSSubClass)
+chisq.test(chi16)
+
+chi17 = table(ames2$GarageCars, ames2$OverallQual)
+chisq.test(chi17)
+
+chi18 = table(ames2$GarageCars, ames2$YearBuilt)
+chisq.test(chi18)
+
+chi19 = table(ames2$MSSubClass, ames2$OverallQual)
+chisq.test(chi19)
+
+chi20 = table(ames2$MSSubClass, ames2$YearBuilt)
+chisq.test(chi20)
+
+chi21 = table(ames2$OverallQual, ames2$YearBuilt)
+chisq.test(chi21)
+```
+
 
 Plots
 ```{r}
@@ -125,8 +237,10 @@ plot(lmames3)
 ```
 
 ```{r}
-ames2$residuals = lmames3$residuals
-ames2$predicted = predict(lmames3)
-plot(ames2$predicted, ames2$residuals)
+qplot(GrLivArea, SalePrice, data=ames2)
+cor(ames2$SalePrice, ames2$GrLivArea)
+qplot(MasVnrArea, SalePrice, data=ames2)
+cor(ames2$SalePrice, ames2$MasVnrArea)
+qplot(YearBuilt, SalePrice, data=ames2)
 ```
 
