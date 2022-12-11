@@ -231,6 +231,13 @@ chisq.test(chi21)
 ```
 
 
+
+```{r}
+lmFullSignificant = lm(SalePrice~MSSubClass + MSZoning + LotFrontage + LotArea + Alley + LotShape + LandContour +  LotConfig + Neighborhood + Condition1 + BldgType + HouseStyle + OverallQual + OverallCond + YearBuilt + RoofStyle + RoofMatl + MasVnrType + MasVnrArea + ExterQual + BsmtQual + BsmtExposure + BsmtFinType1 + BsmtUnfSF + TotalBsmtSF + LowQualFinSF + GrLivArea + BsmtFullBath + FullBath + BedroomAbvGr + KitchenAbvGr + KitchenQual + TotRmsAbvGrd + Functional + Fireplaces + GarageCars + WoodDeckSF + ScreenPorch + PoolArea + PoolQC + SaleCondition, data = ames2 )
+summary(lmFullSignificant)
+```
+
+
 Plots
 ```{r}
 plot(lmames3)
